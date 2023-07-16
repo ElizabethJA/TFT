@@ -1,6 +1,0 @@
-projectKey=INEB_Xela
-serverUrl=http://localhost:9000
-serverVersion=10.1.0.73491
-dashboardUrl=http://localhost:9000/dashboard?id=INEB_Xela
-ceTaskId=AYk4fhOZAh78p0DUmpBr
-ceTaskUrl=http://localhost:9000/api/ce/task?id=AYk4fhOZAh78p0DUmpBr
