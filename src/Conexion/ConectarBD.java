@@ -28,6 +28,7 @@ import com.google.gson.Gson;
  */
 @SuppressWarnings("serial")
 public class ConectarBD extends javax.swing.JDialog {
+
     private transient Connection conexion;
     private static String separador;
     private static String carpetaPrinc;
@@ -38,10 +39,12 @@ public class ConectarBD extends javax.swing.JDialog {
     private final DefaultTableModel modelIPs;
     private ArrayList<String> listaIPsAccesibles;
     private Database database;
+
     /**
      * Creates new form ConectarBD
-     * @throws SQLException 
-     * @throws IOException 
+     *
+     * @throws SQLException
+     * @throws IOException
      */
     public ConectarBD(java.awt.Frame parent, boolean modal) throws SQLException, IOException {
         super(parent, modal);
@@ -50,34 +53,40 @@ public class ConectarBD extends javax.swing.JDialog {
         ConectarBD.separador = System.getProperty("file.separator");
         ConectarBD.carpetaPrinc = System.getProperty("user.home") + separador + "BD";
         ConectarBD.rutaArchivo = carpetaPrinc + separador + "datos.sbd";
-        
-        final String secret = "{\"nombreBD\":sbd_inebxela,\"usuarioBD\":\"inebxela\",\"contraseñaBd\":\"inebxela_quetgo\"}";
+
+        final String secret = "{\"nombreBD\":SBD_INEBXela,\"usuarioBD\":\"root\",\"contraseñaBd\":\"\"}";
         final Gson gson = new Gson();
-        
+
         try {
-			database = gson.fromJson(secret , Database.class);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-        
+            database = gson.fromJson(secret, Database.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         this.hacerVisible = true;
         modelIPs = (DefaultTableModel) tabla_ips_accesibles.getModel();
         this.setLocationRelativeTo(null);   // Para centrar esta ventana sobre la pantalla.
         intentar_conexion();
     }
+
     /**
-     * En este método se intenta determinar si el equipo local es el servidor. Este equipo puede ser el servidor sí y solo sí
-     * tiene la Base de Datos (con los valores de conexión establecidos). Se intenta realizar la conexión; en caso de ser
-     * exitosa se carga la dirección IP del host local en los campos y se notifica que este equipo tiene la BD (puede ser el servidor).
-     * @throws SQLException 
+     * En este método se intenta determinar si el equipo local es el servidor.
+     * Este equipo puede ser el servidor sí y solo sí tiene la Base de Datos
+     * (con los valores de conexión establecidos). Se intenta realizar la
+     * conexión; en caso de ser exitosa se carga la dirección IP del host local
+     * en los campos y se notifica que este equipo tiene la BD (puede ser el
+     * servidor).
+     *
+     * @throws SQLException
      */
     private void probar_si_soy_servidor() throws SQLException {
-    	Connection conexionPrueba = null;
+        Connection conexionPrueba = null;
         try {
             String miIP = InetAddress.getLocalHost().getHostAddress();
-            Class.forName("org.gjt.mm.mysql.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
             // Intento hacer la conexión con el equipo local, asumiendo que este es el servidor.
-            conexionPrueba = DriverManager.getConnection("jdbc:mysql://" + miIP + "/" + database.getNombreBD(), database.getUsuarioBD(), database.getContraseñaBd());
+            conexionPrueba = DriverManager.getConnection("jdbc:mysql://" + miIP + ":3306" + "/" + database.getNombreBD(), database.getUsuarioBD(), database.getContraseñaBd());
+            System.out.println(conexionPrueba);
             // Si no cae a una excepción, entonces este equipo tiene la Base de Datos. Notifico al usuario
             String[] miIPPorPartes = miIP.split("\\.");
             campo_direccion_ip1.setText(miIPPorPartes[0]);  // Cargo la dirección IP del host local
@@ -86,17 +95,19 @@ public class ConectarBD extends javax.swing.JDialog {
             campo_direccion_ip4.setText(miIPPorPartes[3]);
             JOptionPane.showMessageDialog(this,
                     "Este equipo tiene una copia de la Base de Datos."
-                            + "\nEsto implica que puede ser el servidor."
-                            + "\n\nSe cargará la Dirección IP de este equipo, pero usted\ndecida si es o no el servidor!",
+                    + "\nEsto implica que puede ser el servidor."
+                    + "\n\nSe cargará la Dirección IP de este equipo, pero usted\ndecida si es o no el servidor!",
                     "Información", JOptionPane.INFORMATION_MESSAGE);
         } catch (UnknownHostException | ClassNotFoundException | SQLException ex) {
+            System.out.println(ex);
 //            Logger.getLogger(ConectarBD.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
-			if (conexionPrueba!=null) {
-				conexionPrueba.close();
-			}
-		}
+            if (conexionPrueba != null) {
+                conexionPrueba.close();
+            }
+        }
     }
+
     private void intentar_conexion() throws SQLException, IOException {
         File carpetaPrincipal = new File(carpetaPrinc);
         File archivoPrincipal = new File(rutaArchivo);
@@ -115,35 +126,37 @@ public class ConectarBD extends javax.swing.JDialog {
                 archivo = new RandomAccessFile(rutaArchivo, "r");
                 String firma = "";
                 String ipServidor = "";
-                for(int i=0; i<6; i++) firma+= ""+(char)Byte.toUnsignedInt(archivo.readByte());
+                for (int i = 0; i < 6; i++) {
+                    firma += "" + (char) Byte.toUnsignedInt(archivo.readByte());
+                }
                 if ("SBDdat".equals(firma)) {   // Es el archivo correcto
-                    ipServidor+= Byte.toUnsignedInt(archivo.readByte())+".";
-                    ipServidor+= Byte.toUnsignedInt(archivo.readByte())+".";
-                    ipServidor+= Byte.toUnsignedInt(archivo.readByte())+".";
-                    ipServidor+= Byte.toUnsignedInt(archivo.readByte());
+                    ipServidor += Byte.toUnsignedInt(archivo.readByte()) + ".";
+                    ipServidor += Byte.toUnsignedInt(archivo.readByte()) + ".";
+                    ipServidor += Byte.toUnsignedInt(archivo.readByte()) + ".";
+                    ipServidor += Byte.toUnsignedInt(archivo.readByte());
                 }
                 archivo.close();
-                System.out.println("Extrayendo la Dirección IP del Servidor: "+ipServidor);
+                System.out.println("Extrayendo la Dirección IP del Servidor: " + ipServidor);
 
                 conectar(ipServidor);
                 etiqueta_titulo.setText("Conexión establecida");
                 // No es necesario inhabilitar campos ya que el JDialog no se mostrará
             }
         } catch (FileNotFoundException ex) {
-            JOptionPane.showMessageDialog(this, "Error al intentar obtener la Dirección IP del servidor\n"+ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error al intentar obtener la Dirección IP del servidor\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 //            Logger.getLogger(ConectarBD.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Error al intentar obtener la Dirección IP del servidor\n"+ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error al intentar obtener la Dirección IP del servidor\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 //            Logger.getLogger(ConectarBD.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException | SQLException ex) {
-            JOptionPane.showMessageDialog(this, "No se puede conectar con la Base de Datos.\nAl parecer ha cambiado la Dirección IP del servidor.\nConsulte con el Administrador\n\n"+ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "No se puede conectar con la Base de Datos.\nAl parecer ha cambiado la Dirección IP del servidor.\nConsulte con el Administrador\n\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             probar_si_soy_servidor();   // Verifico si este equipo es el Servidor
 //            Logger.getLogger(ConectarBD.class.getName()).log(Level.SEVERE, null, ex);
-        }finally {
-			if (archivo!=null) {
-				archivo.close();
-			}
-		}
+        } finally {
+            if (archivo != null) {
+                archivo.close();
+            }
+        }
     }
 
     /**
@@ -151,7 +164,7 @@ public class ConectarBD extends javax.swing.JDialog {
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
      */
-    
+
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         javax.swing.JPanel jPanel2;
@@ -427,13 +440,13 @@ public class ConectarBD extends javax.swing.JDialog {
             this.dispose(); // Cierro el JDialog
         } catch (ExcepcionDatoIncorrecto ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-    //                Logger.getLogger(ConectarBD.class.getName()).log(Level.SEVERE, null, ex);
+            //                Logger.getLogger(ConectarBD.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException | SQLException ex) {
             JOptionPane.showMessageDialog(this, "No se puede conectar con la Base de Datos", "Error", JOptionPane.ERROR_MESSAGE);
 //            Logger.getLogger(ConectarBD.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Error al intentar guardar la Dirección IP del Servidor", "Error", JOptionPane.ERROR_MESSAGE);
-    //                Logger.getLogger(ConectarBD.class.getName()).log(Level.SEVERE, null, ex);
+            //                Logger.getLogger(ConectarBD.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_conectar_con_base_datosActionPerformed
 
@@ -447,15 +460,15 @@ public class ConectarBD extends javax.swing.JDialog {
             int contadorSinAccesibles = 0;
             String miIP = "";
             String[] ipRed = null;
-            for (int contadorIP=0; contadorIP<256; contadorIP++) {
+            for (int contadorIP = 0; contadorIP < 256; contadorIP++) {
                 try {
                     if ("".equals(miIP)) {
                         miIP = InetAddress.getLocalHost().getHostAddress();
                         ipRed = miIP.split("\\.");  // Obtengo los 4 conjuntos de números de la Dirección IP
                     }
                     String ipPrueba = ipRed[0] + "." + ipRed[1] + "." + ipRed[2] + "." + contadorIP;
-                    System.err.print("\nDirección IP "+ipPrueba+": ");
-                    if (InetAddress.getByName(ipPrueba).isReachable(tiempoEspera)){
+                    System.err.print("\nDirección IP " + ipPrueba + ": ");
+                    if (InetAddress.getByName(ipPrueba).isReachable(tiempoEspera)) {
                         System.out.print("es Accesible");
                         listaIPsAccesibles.add(ipPrueba);
                         contadorSinAccesibles = 0;
@@ -463,8 +476,9 @@ public class ConectarBD extends javax.swing.JDialog {
                         System.out.print("no es Accesible");
                         contadorSinAccesibles++;
                     }
-                    if (contadorSinAccesibles == 255)
+                    if (contadorSinAccesibles == 255) {
                         contadorIP = 255;
+                    }
                 } catch (UnknownHostException ex) {
 //                    Logger.getLogger(ConectarBD.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex) {
@@ -474,89 +488,98 @@ public class ConectarBD extends javax.swing.JDialog {
             // Cargo las direcciones a la tabla
             int cantidad = listaIPsAccesibles.size();
             modelIPs.setRowCount(0);    // Borro los datos de la tabla
-            for(int i=0; i<cantidad; i++)
-                modelIPs.addRow(new String[]{""+(i+1),listaIPsAccesibles.get(i)});
+            for (int i = 0; i < cantidad; i++) {
+                modelIPs.addRow(new String[]{"" + (i + 1), listaIPsAccesibles.get(i)});
+            }
         }
     }//GEN-LAST:event_obtener_ips_accesiblesActionPerformed
-    /**Eventos al ingresar texto en los campos de Dirección IP.
-     * Estos eventos controlan que el texto de entrada sea sólo dígito y que los valores estén entre [0,255]
-     * Los casos que se evalúan son los siguientes:
-     * (1) -> Que la tecla presionada sea un dígito
-     * (2) -> Si la tecla presionada hace que el nuevo valor sea mayor a 255, no se acepta la tecla
-     * (3) -> Si el primer dígito es cero y el que se quiere insertar es cero, no se acepta la tecla
-     * (4) -> Si el primer dígito es cero y el que se quiere insertar es diferente de cero, se borra el texto y se inserta la tecla != 0
-     * (5) -> Si el texto está seleccionado y se presiona un dígito, se borra el contenido anterior y se aceptala tecla
+    /**
+     * Eventos al ingresar texto en los campos de Dirección IP. Estos eventos
+     * controlan que el texto de entrada sea sólo dígito y que los valores estén
+     * entre [0,255] Los casos que se evalúan son los siguientes: (1) -> Que la
+     * tecla presionada sea un dígito (2) -> Si la tecla presionada hace que el
+     * nuevo valor sea mayor a 255, no se acepta la tecla (3) -> Si el primer
+     * dígito es cero y el que se quiere insertar es cero, no se acepta la tecla
+     * (4) -> Si el primer dígito es cero y el que se quiere insertar es
+     * diferente de cero, se borra el texto y se inserta la tecla != 0 (5) -> Si
+     * el texto está seleccionado y se presiona un dígito, se borra el contenido
+     * anterior y se aceptala tecla
      */
     private void campo_direccion_ip1KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_campo_direccion_ip1KeyTyped
         char teclaPresionada = evt.getKeyChar();
         if (Pattern.compile("\\d").matcher(String.valueOf(teclaPresionada)).matches()) {// (1)
-            if (campo_direccion_ip1.getSelectionStart()==0 && campo_direccion_ip1.getSelectionEnd()==campo_direccion_ip1.getText().length())
+            if (campo_direccion_ip1.getSelectionStart() == 0 && campo_direccion_ip1.getSelectionEnd() == campo_direccion_ip1.getText().length()) {
                 campo_direccion_ip1.setText("");    // (5)
-            else {
-                int nuevoValor = Integer.parseInt(campo_direccion_ip1.getText()+String.valueOf(teclaPresionada));
+            } else {
+                int nuevoValor = Integer.parseInt(campo_direccion_ip1.getText() + String.valueOf(teclaPresionada));
                 int valorTecla = Integer.parseInt(String.valueOf(teclaPresionada));
-                if ((nuevoValor>255) || (campo_direccion_ip1.getText().length()==1 && Integer.parseInt(campo_direccion_ip1.getText())==0 && valorTecla==0))
+                if ((nuevoValor > 255) || (campo_direccion_ip1.getText().length() == 1 && Integer.parseInt(campo_direccion_ip1.getText()) == 0 && valorTecla == 0)) {
                     evt.consume();  // (2) o (3)
-                if (campo_direccion_ip1.getText().length()!=0 && Integer.parseInt(campo_direccion_ip1.getText())==0 && valorTecla!=0)
+                }
+                if (campo_direccion_ip1.getText().length() != 0 && Integer.parseInt(campo_direccion_ip1.getText()) == 0 && valorTecla != 0) {
                     campo_direccion_ip1.setText("");    //(4)
+                }
             }
-        }
-        else
+        } else
             evt.consume();
     }//GEN-LAST:event_campo_direccion_ip1KeyTyped
     private void campo_direccion_ip2KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_campo_direccion_ip2KeyTyped
         char teclaPresionada = evt.getKeyChar();
         if (Pattern.compile("\\d").matcher(String.valueOf(teclaPresionada)).matches()) {// (1)
-            if (campo_direccion_ip2.getSelectionStart()==0 && campo_direccion_ip2.getSelectionEnd()==campo_direccion_ip2.getText().length())
+            if (campo_direccion_ip2.getSelectionStart() == 0 && campo_direccion_ip2.getSelectionEnd() == campo_direccion_ip2.getText().length()) {
                 campo_direccion_ip2.setText("");    // (5)
-            else {
-                int nuevoValor = Integer.parseInt(campo_direccion_ip2.getText()+String.valueOf(teclaPresionada));
+            } else {
+                int nuevoValor = Integer.parseInt(campo_direccion_ip2.getText() + String.valueOf(teclaPresionada));
                 int valorTecla = Integer.parseInt(String.valueOf(teclaPresionada));
-                if ((nuevoValor>255) || (campo_direccion_ip2.getText().length()==1 && Integer.parseInt(campo_direccion_ip2.getText())==0 && valorTecla==0))
+                if ((nuevoValor > 255) || (campo_direccion_ip2.getText().length() == 1 && Integer.parseInt(campo_direccion_ip2.getText()) == 0 && valorTecla == 0)) {
                     evt.consume();  // (2) o (3)
-                if (campo_direccion_ip2.getText().length()!=0 && Integer.parseInt(campo_direccion_ip2.getText())==0 && valorTecla!=0)
+                }
+                if (campo_direccion_ip2.getText().length() != 0 && Integer.parseInt(campo_direccion_ip2.getText()) == 0 && valorTecla != 0) {
                     campo_direccion_ip2.setText("");    //(4)
+                }
             }
-        }
-        else
+        } else
             evt.consume();
     }//GEN-LAST:event_campo_direccion_ip2KeyTyped
     private void campo_direccion_ip3KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_campo_direccion_ip3KeyTyped
         char teclaPresionada = evt.getKeyChar();
         if (Pattern.compile("\\d").matcher(String.valueOf(teclaPresionada)).matches()) {// (1)
-            if (campo_direccion_ip3.getSelectionStart()==0 && campo_direccion_ip3.getSelectionEnd()==campo_direccion_ip3.getText().length())
+            if (campo_direccion_ip3.getSelectionStart() == 0 && campo_direccion_ip3.getSelectionEnd() == campo_direccion_ip3.getText().length()) {
                 campo_direccion_ip3.setText("");    // (5)
-            else {
-                int nuevoValor = Integer.parseInt(campo_direccion_ip3.getText()+String.valueOf(teclaPresionada));
+            } else {
+                int nuevoValor = Integer.parseInt(campo_direccion_ip3.getText() + String.valueOf(teclaPresionada));
                 int valorTecla = Integer.parseInt(String.valueOf(teclaPresionada));
-                if ((nuevoValor>255) || (campo_direccion_ip3.getText().length()==1 && Integer.parseInt(campo_direccion_ip3.getText())==0 && valorTecla==0))
+                if ((nuevoValor > 255) || (campo_direccion_ip3.getText().length() == 1 && Integer.parseInt(campo_direccion_ip3.getText()) == 0 && valorTecla == 0)) {
                     evt.consume();  // (2) o (3)
-                if (campo_direccion_ip3.getText().length()!=0 && Integer.parseInt(campo_direccion_ip3.getText())==0 && valorTecla!=0)
+                }
+                if (campo_direccion_ip3.getText().length() != 0 && Integer.parseInt(campo_direccion_ip3.getText()) == 0 && valorTecla != 0) {
                     campo_direccion_ip3.setText("");    //(4)
+                }
             }
-        }
-        else
+        } else
             evt.consume();
     }//GEN-LAST:event_campo_direccion_ip3KeyTyped
     private void campo_direccion_ip4KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_campo_direccion_ip4KeyTyped
         char teclaPresionada = evt.getKeyChar();
         if (Pattern.compile("\\d").matcher(String.valueOf(teclaPresionada)).matches()) {// (1)
-            if (campo_direccion_ip4.getSelectionStart()==0 && campo_direccion_ip4.getSelectionEnd()==campo_direccion_ip4.getText().length())
+            if (campo_direccion_ip4.getSelectionStart() == 0 && campo_direccion_ip4.getSelectionEnd() == campo_direccion_ip4.getText().length()) {
                 campo_direccion_ip4.setText("");    // (5)
-            else {
-                int nuevoValor = Integer.parseInt(campo_direccion_ip4.getText()+String.valueOf(teclaPresionada));
+            } else {
+                int nuevoValor = Integer.parseInt(campo_direccion_ip4.getText() + String.valueOf(teclaPresionada));
                 int valorTecla = Integer.parseInt(String.valueOf(teclaPresionada));
-                if ((nuevoValor>255) || (campo_direccion_ip4.getText().length()==1 && Integer.parseInt(campo_direccion_ip4.getText())==0 && valorTecla==0))
+                if ((nuevoValor > 255) || (campo_direccion_ip4.getText().length() == 1 && Integer.parseInt(campo_direccion_ip4.getText()) == 0 && valorTecla == 0)) {
                     evt.consume();  // (2) o (3)
-                if (campo_direccion_ip4.getText().length()!=0 && Integer.parseInt(campo_direccion_ip4.getText())==0 && valorTecla!=0)
+                }
+                if (campo_direccion_ip4.getText().length() != 0 && Integer.parseInt(campo_direccion_ip4.getText()) == 0 && valorTecla != 0) {
                     campo_direccion_ip4.setText("");    //(4)
+                }
             }
-        }
-        else
+        } else
             evt.consume();
     }//GEN-LAST:event_campo_direccion_ip4KeyTyped
     /**
-     * Eventos para cuando se posiciona el cursor sobre un campo de Dirección IP. Se selecciona todo el texto (si contiene).
+     * Eventos para cuando se posiciona el cursor sobre un campo de Dirección
+     * IP. Se selecciona todo el texto (si contiene).
      */
     private void campo_direccion_ip1FocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_campo_direccion_ip1FocusGained
         campo_direccion_ip1.setSelectionStart(0);
@@ -586,22 +609,28 @@ public class ConectarBD extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_tabla_ips_accesiblesMousePressed
     /**
-     * Método que valida el texto ingresado como dirección IP. Debido a que en los eventos de los campos de dirección aceptan
-     * que la dirección sea válida, lo único que se debe evaluar es que los campos no estén vacíos.
-     * @throws Conexion.ConectarBD.ExcepcionDatoIncorrecto excepción que lanza el mensaje de error si los campos están vacios.
+     * Método que valida el texto ingresado como dirección IP. Debido a que en
+     * los eventos de los campos de dirección aceptan que la dirección sea
+     * válida, lo único que se debe evaluar es que los campos no estén vacíos.
+     *
+     * @throws Conexion.ConectarBD.ExcepcionDatoIncorrecto excepción que lanza
+     * el mensaje de error si los campos están vacios.
      */
     private void validar_direccion_ip() throws ExcepcionDatoIncorrecto {
         // Compruebo que los campos no estén vacios
-        if ("".equals(campo_direccion_ip1.getText()) || "".equals(campo_direccion_ip2.getText()) || "".equals(campo_direccion_ip3.getText()) || "".equals(campo_direccion_ip4.getText()))
+        if ("".equals(campo_direccion_ip1.getText()) || "".equals(campo_direccion_ip2.getText()) || "".equals(campo_direccion_ip3.getText()) || "".equals(campo_direccion_ip4.getText())) {
             throw new ExcepcionDatoIncorrecto("Compruebe que la Dirección IP no tenga campos nulos");
+        }
         // Si llega hasta acá, la Dirección IP es correcta
     }
-    private void conectar(String ipServidor) throws ClassNotFoundException, SQLException  {
+
+    private void conectar(String ipServidor) throws ClassNotFoundException, SQLException {
         Class.forName("org.gjt.mm.mysql.Driver");
         conexion = DriverManager.getConnection("jdbc:mysql://" + ipServidor + "/" + database.getNombreBD(), database.getUsuarioBD(), database.getContraseñaBd());
         hacerVisible = false;   // Si se logra la conexión, no es necesario mostrar este JDialog
         this.direccionIPServidor = ipServidor;  // Guardo la Dirección IP del Servidor
     }
+
     public Connection getConexion() {
         // Verifico si la conexión no se pudo realizar, pero se creó la carpeta con el archivo
         File carpetaPrincipal = new File(carpetaPrinc);
@@ -610,8 +639,15 @@ public class ConectarBD extends javax.swing.JDialog {
         }
         return this.conexion;
     }
-    public boolean getHacerVisible() { return this.hacerVisible; }
-    public String getDireccionIPServidor() { return direccionIPServidor; }
+
+    public boolean getHacerVisible() {
+        return this.hacerVisible;
+    }
+
+    public String getDireccionIPServidor() {
+        return direccionIPServidor;
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -649,9 +685,12 @@ public class ConectarBD extends javax.swing.JDialog {
 //                dialog.setVisible(true);
 //        });
 //    }
-    
+
     private class ExcepcionDatoIncorrecto extends Exception {
-        public ExcepcionDatoIncorrecto(String message) { super(message); }
+
+        public ExcepcionDatoIncorrecto(String message) {
+            super(message);
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

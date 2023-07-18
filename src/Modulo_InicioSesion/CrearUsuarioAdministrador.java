@@ -479,6 +479,7 @@ public class CrearUsuarioAdministrador extends javax.swing.JDialog {
                 instruccion+= "'"+admin_dpi.getText()+"', ";
                 instruccion+= "'"+(admin_sexo_masculino.isSelected() ? "M" : "F")+"', ";
                 instruccion+= ""+(admin_municipio.getSelectedIndex()+1)+")";
+                System.out.println(instruccion);
                 conexion.prepareStatement(instruccion).executeUpdate();  // Creación del Registro en la Base de Datos
                 // Creación del registro en la Tabla Usuarios
                 // La ventaja es que en validar_datos_administrador() ya se evaluó si el Usuario ya existe, por lo que esta
@@ -540,19 +541,23 @@ public class CrearUsuarioAdministrador extends javax.swing.JDialog {
             Statement sentencia = conexion.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             if (idNuevoAdmin == -1) {
                 ResultSet cContAdmins = sentencia.executeQuery("SELECT COUNT(Id), MAX(Id) FROM Administrador");
+                System.out.println(cContAdmins);
                 cContAdmins.next();
                 // el ID del nuevo administrador será 1 (si no hay ningún registro) o el máximo+1 de los que existen
                 idNuevoAdmin = (cContAdmins.getInt(1) == 0) ? 1 : cContAdmins.getInt(2) + 1;
             }
             ResultSet cAdmin = sentencia.executeQuery("SELECT COUNT(Id) FROM Administrador WHERE Dpi = '"+admin_dpi.getText()+"'");
+            System.out.println(cAdmin);
             cAdmin.next();
             if (cAdmin.getInt(1) != 0)
                 throw new ExcepcionDatosIncorrectos("Ya existe un Administrador con el mismo DPI");
             ResultSet cUsuario = sentencia.executeQuery("SELECT existeUsuario('"+usuario_nombre.getText()+"')");
+            System.out.println(cUsuario);
             cUsuario.next();    // La función devuelve la cantidad de registros que coinciden (0 si el usuario aún no existe)
             if (cUsuario.getInt(1) != 0)
                 throw new ExcepcionDatosIncorrectos("Ya existe una Cuenta de Usuario con el mismo nombre");
         } catch (SQLException ex) {
+            System.out.println(ex);
 //            Logger.getLogger(CrearUsuarioAdministrador.class.getName()).log(Level.SEVERE, null, ex);
             throw new ExcepcionDatosIncorrectos("Error de conexión con la Base de Datos.\nConsulte al programador");
         }   

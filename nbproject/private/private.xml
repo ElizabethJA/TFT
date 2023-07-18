@@ -4,8 +4,9 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/Users/williamcaraguay/NetBeansProjects/TNT1/src/Modulo_InicioSesion/IniciarSesion.java</file>
-            <file>file:/Users/williamcaraguay/NetBeansProjects/TNT1/src/tnt1/TNT1.java</file>
-            <file>file:/Users/williamcaraguay/NetBeansProjects/TNT1/src/sbd_ineblfquetgo/SBD_INEBLFQuetgo.java</file>
+            <file>file:/Users/williamcaraguay/NetBeansProjects/TNT1/src/Modulo_AsignacionEST/AsignarEstudiante.java</file>
+            <file>file:/Users/williamcaraguay/NetBeansProjects/TNT1/src/Conexion/Database.java</file>
+            <file>file:/Users/williamcaraguay/NetBeansProjects/TNT1/src/Modulo_InicioSesion/CrearUsuarioAdministrador.java</file>
             <file>file:/Users/williamcaraguay/NetBeansProjects/TNT1/src/Conexion/ConectarBD.java</file>
         </group>
     </open-files>
