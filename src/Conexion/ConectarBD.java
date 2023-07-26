@@ -446,6 +446,7 @@ public class ConectarBD extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             //                Logger.getLogger(ConectarBD.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException | SQLException ex) {
+            System.out.println(ex);
             JOptionPane.showMessageDialog(this, "No se puede conectar con la Base de Datos", "Error", JOptionPane.ERROR_MESSAGE);
 //            Logger.getLogger(ConectarBD.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {

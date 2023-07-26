@@ -7,6 +7,7 @@ public class Database {
     private String  contraseñaBd;
     
 	public String getNombreBD() {
+//            System.out.println(System.getenv("DISPLAY"));
             System.out.println(nombreBD);
 		return nombreBD;
 	}
