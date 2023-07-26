@@ -113,6 +113,7 @@ public class ConectarBD extends javax.swing.JDialog {
         File archivoPrincipal = new File(rutaArchivo);
         RandomAccessFile archivo = null;
         try {
+            System.out.println(rutaArchivo);
             // Si la carpeta principal no existe se crea para guardar los datos de conexión con la Base de Datos
             System.out.println((!carpetaPrincipal.exists() || !archivoPrincipal.exists()));
             if (!carpetaPrincipal.exists() || !archivoPrincipal.exists()) {
