@@ -85,7 +85,7 @@ public class ConectarBD extends javax.swing.JDialog {
             String miIP = InetAddress.getLocalHost().getHostAddress();
             Class.forName("com.mysql.jdbc.Driver");
             // Intento hacer la conexión con el equipo local, asumiendo que este es el servidor.
-            conexionPrueba = DriverManager.getConnection("jdbc:mysql://database-1.cq9khedmefzm.us-east-1.rds.amazonaws.com:3306" + "/" + database.getNombreBD(), database.getUsuarioBD(), database.getContraseñaBd());
+            conexionPrueba = DriverManager.getConnection("jdbc:mysql://database-1.cq9khedmefzm.us-east-1.rds.amazonaws.com:3306" + "/" + database.getNombreBD()+"?characterEncoding=utf8", database.getUsuarioBD(), database.getContraseñaBd());
             System.out.println(conexionPrueba);
             // Si no cae a una excepción, entonces este equipo tiene la Base de Datos. Notifico al usuario
             String[] miIPPorPartes = miIP.split("\\.");
@@ -637,7 +637,7 @@ public class ConectarBD extends javax.swing.JDialog {
         System.out.println(database.getNombreBD());
         System.out.println(database.getUsuarioBD());
                 System.out.println("________________");
-        conexion = DriverManager.getConnection("jdbc:mysql://database-1.cq9khedmefzm.us-east-1.rds.amazonaws.com:3306" + "/" + database.getNombreBD(), database.getUsuarioBD(), database.getContraseñaBd());
+        conexion = DriverManager.getConnection("jdbc:mysql://database-1.cq9khedmefzm.us-east-1.rds.amazonaws.com:3306" + "/" + database.getNombreBD()+"?characterEncoding=utf8", database.getUsuarioBD(), database.getContraseñaBd());
         hacerVisible = false;   // Si se logra la conexión, no es necesario mostrar este JDialog
         this.direccionIPServidor = ipServidor;  // Guardo la Dirección IP del Servidor
     }
