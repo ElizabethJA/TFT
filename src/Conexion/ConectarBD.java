@@ -54,7 +54,7 @@ public class ConectarBD extends javax.swing.JDialog {
         ConectarBD.carpetaPrinc = System.getProperty("user.home") + separador + "BD";
         ConectarBD.rutaArchivo = carpetaPrinc + separador + "datos.sbd";
 
-        final String secret = "{\"nombreBD\":SBD_INEBXela,\"usuarioBD\":\"admin\",\"contraseñaBd\":\"\"}";
+        final String secret = "{\"nombreBD\":SBD_INEBXela,\"usuarioBD\":\"admin\",\"contraseñaBd\":\"rootadmin\"}";
         final Gson gson = new Gson();
 
         try {
